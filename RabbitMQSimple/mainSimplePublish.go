@@ -10,4 +10,3 @@ func main() {
 	rabbitmq.PublishSimple("Hello RabbitMQ!")
 	fmt.Println("发送成功!")
 }
-
