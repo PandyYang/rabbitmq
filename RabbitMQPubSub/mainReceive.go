@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	rabbitmq := rabbitmq.NewRabbitMQPubSub("pubsub")
+	rabbitmq := RabbitMQ.NewRabbitMQPubSub("pubsub")
 	rabbitmq.ReceiveSub()
 }

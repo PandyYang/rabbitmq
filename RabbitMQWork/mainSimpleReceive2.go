@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	rabbitmq := rabbitmq.NewRabbitMQSimple("111")
+	rabbitmq := RabbitMQ.NewRabbitMQSimple("111")
 	rabbitmq.ConsumeSimple()
 }

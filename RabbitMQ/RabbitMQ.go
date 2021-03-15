@@ -1,4 +1,4 @@
-package rabbitmq
+package RabbitMQ
 
 import (
 	"fmt"
@@ -190,6 +190,97 @@ func (r *RabbitMQ) ReceiveSub() {
 	err = r.channel.QueueBind(
 		q.Name,
 		"",
+		r.Exchange,
+		false,
+		nil,
+	)
+
+	//消费消息
+	message, err := r.channel.Consume(
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+
+	forever := make(chan bool)
+	go func() {
+		for d := range message {
+			log.Printf("Received a message: %s", d.Body)
+		}
+	}()
+	fmt.Printf("退出请按CTRL+C\n")
+	<-forever
+}
+
+//路由模式
+func NewRabbitMQRouting(exchangeName string, routingKey string) *RabbitMQ {
+	//创建RabbitMQ实例
+	rabbitmq := NewRabbitMQ("", exchangeName, routingKey)
+	var err error
+	rabbitmq.conn, err = amqp.Dial(rabbitmq.Mqurl)
+	rabbitmq.failOnErr(err, "failed to connect rabbitmq!")
+	rabbitmq.channel, err = rabbitmq.conn.Channel()
+	rabbitmq.failOnErr(err, "failed to open an channel")
+	return rabbitmq
+}
+
+//路由模式下发送消息
+func (r *RabbitMQ) PublishRouting(message string) {
+	err := r.channel.ExchangeDeclare(
+		r.Exchange,
+		"direct", //交换机类型
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+
+	r.failOnErr(err, "failed to declare an exchange")
+
+	err = r.channel.Publish(
+		r.Exchange,
+		r.Key, //带上key
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(message),
+		})
+}
+
+//路由模式下消息的接收
+func (r *RabbitMQ) ReceiveRouting() {
+	err := r.channel.ExchangeDeclare(
+		r.Exchange,
+		"direct",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+
+	r.failOnErr(err, "failed to declare an exchange")
+
+	q, err := r.channel.QueueDeclare(
+		"",
+		false,
+		false,
+		true,
+		false,
+		nil,
+	)
+
+	r.failOnErr(err, "failed to declare a queue")
+
+	err = r.channel.QueueBind(
+		q.Name,
+		r.Key,
 		r.Exchange,
 		false,
 		nil,

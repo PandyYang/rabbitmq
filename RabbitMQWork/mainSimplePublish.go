@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	rabbitmq := rabbitmq.NewRabbitMQSimple("111")
+	rabbitmq := RabbitMQ.NewRabbitMQSimple("111")
 	for i := 0; i <= 100; i++ {
 		rabbitmq.PublishSimple("send Message" + strconv.Itoa(i))
 		time.Sleep(1 * time.Second)
